@@ -1,45 +1,50 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using EstimationApplication.Entities;
-using EstimationApplication.Data;
+using Microsoft.Extensions.Logging;
 
 namespace EstimationApplication.BusinessRule
 {
     public class EstimateBusiness : IEstimateBusiness
     {
-        private readonly IUserData userData;
         protected IConfiguration configuration;
+        private readonly ILogger logger;
 
-        public EstimateBusiness(IUserData _userData, IConfiguration _configuration)
+        public EstimateBusiness(IConfiguration _configuration, ILogger<EstimateBusiness> _logger)
         {
-            userData = _userData;
             configuration = _configuration;
+            logger = _logger;
         }
 
         public void CalculateEstimate(EstimationModel estimate)
         {
             var calculatedEstimate = CalculateEstimateWithoutDiscount(estimate.GoldPricePerGram, estimate.WeightInGram);
-            if (estimate.Customer.UserCategories.Contains(Entities.UserCategory.Privileged.ToString()))
+            try
             {
-                if (Decimal.TryParse(configuration[EstimationApplicationConstant.DiscountPercentagePrivlieged], out decimal discount))
+                logger.LogInformation("Started Calculating Estimate");
+                if (estimate.Customer.UserCategories.Contains(Entities.UserCategory.Privileged.ToString()))
                 {
-                    estimate.Discount = discount;
-                    calculatedEstimate = CalculateEstimateWithDiscount(calculatedEstimate, estimate.Discount);
+                    if (Decimal.TryParse(configuration[EstimationApplicationConstant.DiscountPercentagePrivlieged], out decimal discount))
+                    {
+                        estimate.Discount = discount;
+                        calculatedEstimate = CalculateEstimateWithDiscount(calculatedEstimate, estimate.Discount);
+                    }
                 }
+                else
+                {
+                    if (Decimal.TryParse(configuration[EstimationApplicationConstant.DiscountPercentageRegular], out decimal discount))
+                    {
+                        estimate.Discount = discount;
+                        calculatedEstimate = CalculateEstimateWithDiscount(calculatedEstimate, estimate.Discount);
+                    }
+                }
+                estimate.TotalPrice = calculatedEstimate;
             }
-            else
+            catch (Exception ex)
             {
-                if (Decimal.TryParse(configuration[EstimationApplicationConstant.DiscountPercentageRegular], out decimal discount))
-                {
-                    estimate.Discount = discount;
-                    calculatedEstimate = CalculateEstimateWithDiscount(calculatedEstimate, estimate.Discount);
-                }
+                logger.LogError(ex.Message);
+                throw new ExstimationApplicationBusinessException(ex.Message);
             }
-            estimate.TotalPrice = calculatedEstimate;
         }
 
         private decimal CalculateEstimateWithoutDiscount(decimal goldPricePerGram, decimal weightInGram)

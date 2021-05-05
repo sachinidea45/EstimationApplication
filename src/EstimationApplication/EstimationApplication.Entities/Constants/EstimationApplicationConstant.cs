@@ -37,5 +37,10 @@
         public const string PrintFileSuccessful = "Print To File Successfull";
         public const string PrintPaperSuccessful = "Print To Paper Successfull";
         public const string PrintPaperNotImplemented = "Print To Paper Not Implemented";
+
+        public const string UnauthorizedAccessExceptionMessage = "Estimation Application: Unauthorized Access";
+        public const string NotImplementedExceptionMessage = "Estimation Application: Not Implemented Exception";
+        public const string BusinessLayerExceptionMessage = "Estimation Application: Exception at Business Layer ";
+        public const string DataLayerExceptionMessage = "Estimation Application: Exception at Data Layer ";
     }
 }

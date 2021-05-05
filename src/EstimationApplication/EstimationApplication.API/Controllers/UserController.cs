@@ -2,17 +2,13 @@
 using EstimationApplication.API.Models;
 using EstimationApplication.BusinessRule;
 using EstimationApplication.Entities;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace EstimationApplication.API.Controllers
@@ -25,13 +21,15 @@ namespace EstimationApplication.API.Controllers
         private readonly RoleManager<IdentityRole> roleManager;
         private readonly IConfiguration _configuration;
         private readonly IUserBusiness userBusiness;
+        private readonly ILogger logger;
 
-        public UserController(IUserBusiness _userBusiness, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
+        public UserController(IUserBusiness _userBusiness, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, ILogger<UserController> _logger)
         {
             this.userManager = userManager;
             this.roleManager = roleManager;
             _configuration = configuration;
             userBusiness = _userBusiness;
+            logger = _logger;
         }
 
         [HttpPost]
@@ -41,28 +39,42 @@ namespace EstimationApplication.API.Controllers
             var user = await userManager.FindByNameAsync(model.Username);
             if (user != null && await userManager.CheckPasswordAsync(user, model.Password))
             {
+                logger.LogInformation("Authentication Succesfull, Started Generating Token");
                 var userRoles = await userManager.GetRolesAsync(user);
 
-                var authClaims = new List<Claim>
+                var authAdditionalClaims = new Claim[userRoles.Count];
+                for (int i = 0; i < userRoles.Count; i++)
                 {
-                    new Claim(ClaimTypes.Name, user.UserName),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                };
-
-                foreach (var userRole in userRoles)
-                {
-                    authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+                    authAdditionalClaims[i] = new Claim(ClaimTypes.Role, userRoles[i]);
                 }
 
-                var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+                var signingKey = _configuration["JWT:Secret"];
+                var issuer = _configuration["JWT:ValidIssuer"];
+                var audience = _configuration["JWT:ValidAudience"];
+                var expiration = new TimeSpan(3,0,0);
+                
+                var token = JwtHelper.GetJwtToken(user.UserName, signingKey, issuer, audience, expiration, authAdditionalClaims);
 
-                var token = new JwtSecurityToken(
-                    issuer: _configuration["JWT:ValidIssuer"],
-                    audience: _configuration["JWT:ValidAudience"],
-                    expires: DateTime.Now.AddHours(3),
-                    claims: authClaims,
-                    signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
-                    );
+                //var authClaims = new List<Claim>
+                //{
+                //    new Claim(ClaimTypes.Name, user.UserName),
+                //    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                //};
+
+                //foreach (var userRole in userRoles)
+                //{
+                //    authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+                //}
+
+                //var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+
+                //var token = new JwtSecurityToken(
+                //    issuer: _configuration["JWT:ValidIssuer"],
+                //    audience: _configuration["JWT:ValidAudience"],
+                //    expires: DateTime.Now.AddHours(3),
+                //    claims: authClaims,
+                //    signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
+                //    );
 
                 return Ok(new LoginResponseModel
                 {
@@ -73,59 +85,8 @@ namespace EstimationApplication.API.Controllers
                     Message = EstimationApplicationConstant.UserAuthenticationSuccessful,
                 });
             }
+            logger.LogWarning("Invalid Login Credentials");
             return Unauthorized();
         }
-
-        //[HttpPost]
-        //[Route("register")]
-        //public async Task<IActionResult> Register([FromBody] RegisterModel model)
-        //{
-        //    var userExists = await userManager.FindByNameAsync(model.Username);
-        //    if (userExists != null)
-        //        return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User already exists!" });
-
-        //    ApplicationUser user = new ApplicationUser()
-        //    {
-        //        Email = model.Email,
-        //        SecurityStamp = Guid.NewGuid().ToString(),
-        //        UserName = model.Username
-        //    };
-        //    var result = await userManager.CreateAsync(user, model.Password);
-        //    if (!result.Succeeded)
-        //        return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
-
-        //    return Ok(new Response { Status = "Success", Message = "User created successfully!" });
-        //}
-
-        //[HttpPost]
-        //[Route("register-admin")]
-        //public async Task<IActionResult> RegisterAdmin([FromBody] RegisterModel model)
-        //{
-        //    var userExists = await userManager.FindByNameAsync(model.Username);
-        //    if (userExists != null)
-        //        return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User already exists!" });
-
-        //    ApplicationUser user = new ApplicationUser()
-        //    {
-        //        Email = model.Email,
-        //        SecurityStamp = Guid.NewGuid().ToString(),
-        //        UserName = model.Username
-        //    };
-        //    var result = await userManager.CreateAsync(user, model.Password);
-        //    if (!result.Succeeded)
-        //        return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
-
-        //    if (!await roleManager.RoleExistsAsync(UserRoles.Admin))
-        //        await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
-        //    if (!await roleManager.RoleExistsAsync(UserRoles.User))
-        //        await roleManager.CreateAsync(new IdentityRole(UserRoles.User));
-
-        //    if (await roleManager.RoleExistsAsync(UserRoles.Admin))
-        //    {
-        //        await userManager.AddToRoleAsync(user, UserRoles.Admin);
-        //    }
-
-        //    return Ok(new Response { Status = "Success", Message = "User created successfully!" });
-        //}
     }
 }

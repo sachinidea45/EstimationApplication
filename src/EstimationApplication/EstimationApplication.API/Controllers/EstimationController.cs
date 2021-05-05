@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using EstimationApplication.API.Models;
 using EstimationApplication.BusinessRule;
 using EstimationApplication.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace EstimationApplication.API.Controllers
 {
@@ -16,12 +17,14 @@ namespace EstimationApplication.API.Controllers
         private readonly IEstimateBusiness estimateBusiness;
         private readonly IUserBusiness userBusiness;
         private readonly Func<string, IPrintBusiness> printBusiness;
+        private readonly ILogger logger;
 
-        public EstimationController(IEstimateBusiness _estimateBusiness, IUserBusiness _userBusiness, Func<string, IPrintBusiness> _printBusiness)
+        public EstimationController(IEstimateBusiness _estimateBusiness, IUserBusiness _userBusiness, Func<string, IPrintBusiness> _printBusiness, ILogger<EstimationController> _logger)
         {
             estimateBusiness = _estimateBusiness;
             userBusiness = _userBusiness;
             printBusiness = _printBusiness;
+            logger = _logger;
         }
 
         [HttpPost]
@@ -43,8 +46,9 @@ namespace EstimationApplication.API.Controllers
                 }
                 else return BadRequest(EstimationApplicationConstant.CustomerNotFound);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                logger.LogError(ex.Message);
                 return BadRequest();
             }
         }
@@ -94,8 +98,9 @@ namespace EstimationApplication.API.Controllers
                         };
                     }
                 }
-                catch (NotImplementedException)
+                catch (NotImplementedException ex)
                 {
+                    logger.LogError(ex.Message);
                     return new PrintResponseModel
                     {
                         Status = EstimationApplicationConstant.PrintWarningStatus,

@@ -1,17 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using EstimationApplication.Data;
 using EstimationApplication.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace EstimationApplication.BusinessRule
 {
     public class UserBusiness : IUserBusiness
     {
         private readonly IUserData userData;
+        private readonly ILogger logger;
 
-        public UserBusiness(IUserData _userData)
+        public UserBusiness(IUserData _userData, ILogger<UserBusiness> _logger)
         {
             userData = _userData;
+            logger = _logger;
         }
 
         public CustomerModel FindCustomerByUserName(string userName)
@@ -45,11 +49,19 @@ namespace EstimationApplication.BusinessRule
         private CustomerModel GetCustomerFromUser(UserModel user)
         {
             var customer = new CustomerModel() { UserName = user.UserName, UserCategories = new List<string>() };
-            foreach (var item in user.UserCategories)
+            try
             {
-                customer.UserCategories.Add(item.ToString());
+                foreach (var item in user.UserCategories)
+                {
+                    customer.UserCategories.Add(item.ToString());
+                }
+                return customer;
             }
-            return customer;
+            catch(Exception ex)
+            {
+                logger.LogError(ex.Message);
+                throw new ExstimationApplicationBusinessException(ex.Message);
+            }
         }
     }
 }

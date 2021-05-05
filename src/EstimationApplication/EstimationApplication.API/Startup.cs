@@ -14,6 +14,8 @@ using EstimationApplication.Data;
 using EstimationApplication.API.Authentication;
 using EstimationApplication.BusinessRule;
 using EstimationApplication.Entities;
+using EstimationApplication.API.Models;
+using Microsoft.Extensions.Logging;
 
 namespace EstimationApplication.API
 {
@@ -29,38 +31,11 @@ namespace EstimationApplication.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
-
-            // For Entity Framework
-            services.AddDbContext<ApplicationDbContext>(options => options.UseInMemoryDatabase(Configuration.GetConnectionString("ConnStr")));
-
-            // For Identity  
-            services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
-
-            // Adding Authentication  
-            services.AddAuthentication(options =>
+            services.AddControllers(config =>
             {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-
-            // Adding Jwt Bearer  
-            .AddJwtBearer(options =>
-            {
-                options.SaveToken = true;
-                options.RequireHttpsMetadata = false;
-                options.TokenValidationParameters = new TokenValidationParameters()
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidAudience = Configuration["JWT:ValidAudience"],
-                    ValidIssuer = Configuration["JWT:ValidIssuer"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Secret"]))
-                };
+                config.Filters.Add(typeof(EstimationApplicationAPIExceptionFilter));
             });
+            AddAuthenticationServices(services);
 
             services.Add(new ServiceDescriptor(typeof(UserManager<ApplicationUser>), typeof(ApplicationUserManager<ApplicationUser>), ServiceLifetime.Transient));
             services.Add(new ServiceDescriptor(typeof(IUserBusiness), typeof(UserBusiness), ServiceLifetime.Transient));
@@ -94,7 +69,7 @@ namespace EstimationApplication.API
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
             if (env.IsDevelopment())
             {
@@ -102,6 +77,13 @@ namespace EstimationApplication.API
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "EstimationApplication.API v1"));
             }
+            else
+            {
+                app.UseExceptionHandler("/api/Error/error");
+            }
+            app.UseStatusCodePages("text/plain", "Status code page, status code: {0}");
+
+            loggerFactory.AddFile("Logs/EstimationApplicationLog-{Date}.txt");
 
             app.UseHttpsRedirection();
 
@@ -113,6 +95,40 @@ namespace EstimationApplication.API
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+            });
+        }
+
+        private void AddAuthenticationServices(IServiceCollection services)
+        {
+            // For Entity Framework
+            services.AddDbContext<ApplicationDbContext>(options => options.UseInMemoryDatabase(Configuration.GetConnectionString(EstimationApplicationConstant.XMLConnectionString)));
+
+            // For Identity  
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
+
+            // Adding Authentication  
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+
+            // Adding Jwt Bearer  
+            .AddJwtBearer(options =>
+            {
+                options.SaveToken = true;
+                options.RequireHttpsMetadata = false;
+                options.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidAudience = Configuration["JWT:ValidAudience"],
+                    ValidIssuer = Configuration["JWT:ValidIssuer"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Secret"]))
+                };
             });
         }
     }
