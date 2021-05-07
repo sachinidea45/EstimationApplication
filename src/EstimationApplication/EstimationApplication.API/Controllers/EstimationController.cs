@@ -6,6 +6,9 @@ using EstimationApplication.API.Models;
 using EstimationApplication.BusinessRule;
 using EstimationApplication.Entities;
 using Microsoft.Extensions.Logging;
+using System.Linq;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace EstimationApplication.API.Controllers
 {
@@ -113,7 +116,7 @@ namespace EstimationApplication.API.Controllers
 
         private EstimationModel GetEstimateModelFromRequestModel(EstimateRequestModel estimateRequestModel)
         {
-            CustomerModel cust = userBusiness.FindCustomerByUserName(estimateRequestModel.Username);
+            CustomerModel cust = userBusiness.FindCustomerByUserName(GetUserNameFromJwtToken());
             if (cust != null)
             {
                 return new EstimationModel
@@ -124,6 +127,11 @@ namespace EstimationApplication.API.Controllers
                 };
             }
             return null;
+        }
+
+        private string GetUserNameFromJwtToken()
+        {
+            return User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
         }
     }
 }

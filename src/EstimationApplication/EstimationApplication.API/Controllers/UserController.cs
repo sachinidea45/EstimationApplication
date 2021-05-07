@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -87,6 +88,16 @@ namespace EstimationApplication.API.Controllers
             }
             logger.LogWarning("Invalid Login Credentials");
             return Unauthorized();
+        }
+
+        public string GetUserName()
+        {
+            return GetUserNameFromJwtToken();
+        }
+
+        private string GetUserNameFromJwtToken()
+        {
+            return User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
         }
     }
 }

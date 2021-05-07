@@ -20,11 +20,14 @@ namespace EstimationApplication.Data
             var connectionString = _configuration.GetConnectionString(EstimationApplicationConstant.XMLConnectionString);
             try
             {
-                var csValues = connectionString.Split(';');
-                var uri = csValues.FirstOrDefault(x => x.StartsWith("URI"));
-                xmlDataPath = uri.Split('=')[1];
-                logger.LogInformation("Started Loading Users Data");
-                _users = LoadAllUserData();
+                if (connectionString != null)
+                {
+                    var csValues = connectionString.Split(';');
+                    var uri = csValues.FirstOrDefault(x => x.StartsWith("URI"));
+                    xmlDataPath = uri.Split('=')[1];
+                    logger.LogInformation("Started Loading Users Data");
+                    _users = LoadAllUserData();
+                }
             }
             catch (Exception ex)
             {

@@ -40,6 +40,7 @@ namespace EstimationApplication.API
             services.Add(new ServiceDescriptor(typeof(UserManager<ApplicationUser>), typeof(ApplicationUserManager<ApplicationUser>), ServiceLifetime.Transient));
             services.Add(new ServiceDescriptor(typeof(IUserBusiness), typeof(UserBusiness), ServiceLifetime.Transient));
             services.Add(new ServiceDescriptor(typeof(IEstimateBusiness), typeof(EstimateBusiness), ServiceLifetime.Transient));
+            services.Add(new ServiceDescriptor(typeof(IUserData), typeof(UserData), ServiceLifetime.Transient));
 
             services.AddSingleton<PrintScreenBusiness>();
             services.AddSingleton<PrintFileBusiness>();
@@ -60,7 +61,14 @@ namespace EstimationApplication.API
                 }
             });
 
-            services.Add(new ServiceDescriptor(typeof(IUserData), typeof(UserData), ServiceLifetime.Transient));
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy",
+                    builder => builder.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials());
+            });
 
             services.AddSwaggerGen(c =>
             {
@@ -84,6 +92,9 @@ namespace EstimationApplication.API
             app.UseStatusCodePages("text/plain", "Status code page, status code: {0}");
 
             loggerFactory.AddFile("Logs/EstimationApplicationLog-{Date}.txt");
+
+            //app.UseCors("CorsPolicy");
+            //app.UseMvc();
 
             app.UseHttpsRedirection();
 
