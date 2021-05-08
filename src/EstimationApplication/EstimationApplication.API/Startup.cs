@@ -35,38 +35,25 @@ namespace EstimationApplication.API
             {
                 config.Filters.Add(typeof(EstimationApplicationAPIExceptionFilter));
             });
+
             AddAuthenticationServices(services);
+            AddEstimationApplicationServices(services);
 
-            services.Add(new ServiceDescriptor(typeof(UserManager<ApplicationUser>), typeof(ApplicationUserManager<ApplicationUser>), ServiceLifetime.Transient));
-            services.Add(new ServiceDescriptor(typeof(IUserBusiness), typeof(UserBusiness), ServiceLifetime.Transient));
-            services.Add(new ServiceDescriptor(typeof(IEstimateBusiness), typeof(EstimateBusiness), ServiceLifetime.Transient));
-            services.Add(new ServiceDescriptor(typeof(IUserData), typeof(UserData), ServiceLifetime.Transient));
-
-            services.AddSingleton<PrintScreenBusiness>();
-            services.AddSingleton<PrintFileBusiness>();
-            services.AddSingleton<PrintPaperBusiness>();
-
-            services.AddTransient<Func<string, IPrintBusiness>>(serviceProvider => key =>
-            {
-                switch (key)
-                {
-                    case EstimationApplicationConstant.PrintToScreen:
-                        return serviceProvider.GetService<PrintScreenBusiness>();
-                    case EstimationApplicationConstant.PrintToFile:
-                        return serviceProvider.GetService<PrintFileBusiness>();
-                    case EstimationApplicationConstant.PrintToPaper:
-                        return serviceProvider.GetService<PrintPaperBusiness>();
-                    default:
-                        return null;
-                }
-            });
+            services.AddMvc();
+            services.AddCors();
 
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy",
                     builder => builder.AllowAnyOrigin()
                     .AllowAnyMethod()
-                    .AllowAnyHeader()
+                    .AllowAnyHeader());
+            });
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy",
+                    builder => builder
                     .AllowCredentials());
             });
 
@@ -93,8 +80,8 @@ namespace EstimationApplication.API
 
             loggerFactory.AddFile("Logs/EstimationApplicationLog-{Date}.txt");
 
-            //app.UseCors("CorsPolicy");
-            //app.UseMvc();
+            app.UseCorsMiddleware();
+            app.UseCors("CorsPolicy");
 
             app.UseHttpsRedirection();
 
@@ -106,6 +93,33 @@ namespace EstimationApplication.API
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+            });
+        }
+
+        private static void AddEstimationApplicationServices(IServiceCollection services)
+        {
+            services.Add(new ServiceDescriptor(typeof(UserManager<ApplicationUser>), typeof(ApplicationUserManager<ApplicationUser>), ServiceLifetime.Transient));
+            services.Add(new ServiceDescriptor(typeof(IUserBusiness), typeof(UserBusiness), ServiceLifetime.Transient));
+            services.Add(new ServiceDescriptor(typeof(IEstimateBusiness), typeof(EstimateBusiness), ServiceLifetime.Transient));
+            services.Add(new ServiceDescriptor(typeof(IUserData), typeof(UserData), ServiceLifetime.Transient));
+
+            services.AddSingleton<PrintScreenBusiness>();
+            services.AddSingleton<PrintFileBusiness>();
+            services.AddSingleton<PrintPaperBusiness>();
+
+            services.AddTransient<Func<string, IPrintBusiness>>(serviceProvider => key =>
+            {
+                switch (key)
+                {
+                    case EstimationApplicationConstant.PrintToScreen:
+                        return serviceProvider.GetService<PrintScreenBusiness>();
+                    case EstimationApplicationConstant.PrintToFile:
+                        return serviceProvider.GetService<PrintFileBusiness>();
+                    case EstimationApplicationConstant.PrintToPaper:
+                        return serviceProvider.GetService<PrintPaperBusiness>();
+                    default:
+                        return null;
+                }
             });
         }
 
