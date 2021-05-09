@@ -1,3 +1,70 @@
-<p>
-  home works!
-</p>
+<div class="col-md-8 offset-md-2 mt-5">
+  <div class="card">
+      <h4 class="card-header">Estimation Screen</h4>
+      <div class="card-body">
+          <form [formGroup]="estimationForm" (ngSubmit)="onEstimationSubmit()">
+              <div class="form-group navbar-nav">
+                  <label for="goldPricePerGram">Gold Price(per gram)</label>
+                  <input type="text" formControlName="goldPricePerGram" class="form-control" [ngClass]="{ 'is-invalid': estimationSubmitted && f.goldPricePerGram.errors }" />
+                  <div *ngIf="estimationSubmitted && f.goldPricePerGram.errors" class="invalid-feedback">
+                      <div *ngIf="f.goldPricePerGram.errors.required">Gold Price is required</div>
+                  </div>
+              </div>
+              <div class="form-group">
+                  <label for="weightInGrams">Weight(grams)</label>
+                  <input type="text" formControlName="weightInGrams" class="form-control" [ngClass]="{ 'is-invalid': estimationSubmitted && f.weightInGrams.errors }" />
+                  <div *ngIf="estimationSubmitted && f.weightInGrams.errors" class="invalid-feedback">
+                      <div *ngIf="f.weightInGrams.errors.required">Weight is required</div>
+                  </div>
+              </div>
+              <hr/>
+              <div *ngIf="estimationResult != null" class="form-group">
+                <label for="estimationResult.totalPrice">Total Price</label>
+                <input  disabled="true" type="text" class="form-control" 
+                [(ngModel)]="estimationResult.totalPrice" 
+                [ngModelOptions]="{standalone: true}" />
+            </div>
+            <div *ngIf="currentUser.customer.discountPercentApplicable != 0" class="form-group">
+                <label for="currentUser.customer.discountPercentApplicable">Discount %</label>
+                <input disabled="true" type="text" class="form-control" 
+                [(ngModel)]="currentUser.customer.discountPercentApplicable"
+                [ngModelOptions]="{standalone: true}"/>
+                <div *ngIf="estimationSubmitted && f.weightInGrams.errors" class="invalid-feedback">
+                    <div *ngIf="f.weightInGrams.errors.required">Weight is required</div>
+                </div>
+            </div>
+            
+            <span class="a-button-inner">
+                <button [disabled]="loading" class="btn btn-primary" value="Calculate">
+                    <span *ngIf="loading" class="spinner-border spinner-border-sm mr-1"></span>
+                    Calculate
+                </button>
+            </span>
+            <span class="a-button-inner">
+                <button [disabled]="loading" class="btn btn-primary" value ="PrintToScreen">
+                    <span *ngIf="loading" class="spinner-border spinner-border-sm mr-1"></span>
+                    Print To Screen
+                </button>
+            </span>
+            <span class="a-button-inner">
+                <button [disabled]="loading" class="btn btn-primary" value ="PrintToFile">
+                    <span *ngIf="loading" class="spinner-border spinner-border-sm mr-1"></span>
+                    Print To File
+                </button>
+            </span>            
+            <span class="a-button-inner">
+                <button [disabled]="loading" class="btn btn-primary" value ="PrintToPaper">
+                    <span *ngIf="loading" class="spinner-border spinner-border-sm mr-1"></span>
+                    Print To Paper
+                </button>
+            </span>
+            <div class="topnav col-md-2 offset-md-10 mt-5" *ngIf="currentUser">
+                <div class="topnav-right">
+                    <a (click)="logout()">Close</a>
+                </div>
+            </div>            
+            <div *ngIf="error" class="alert alert-danger mt-3 mb-0">{{error}}</div>
+        </form>
+      </div>
+  </div>
+</div>

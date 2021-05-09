@@ -17,7 +17,8 @@ namespace EstimationApplication.BusinessRule
 
         protected string GetEstimationDataText(EstimationModel estimation)
         {
-            return JsonConvert.SerializeObject(estimation);
+            string dataText = string.Concat("GoldPricePerGram: ", estimation.GoldPricePerGram, "\nWeightInGram: ", estimation.WeightInGram, "\nTotalPrice: ", estimation.TotalPrice);
+            return dataText;
         }
     }
 }
