@@ -29,13 +29,13 @@ namespace EstimationApplication.Test
         {
             var estimate = new EstimationModel
             {
-                Customer = new CustomerModel { UserName = userName, UserCategories = new List<string> { role } },
+                Customer = new CustomerModel(configuration) { UserName = userName, UserCategories = new List<string> { role } },
                 GoldPricePerGram = goldPricePerGram,
                 WeightInGram = weightInGram
             };
 
             var mock = new Mock<ILogger<EstimateBusiness>>();
-            IEstimateBusiness estimationBusiness = new EstimateBusiness(configuration, mock.Object);
+            IEstimateBusiness estimationBusiness = new EstimateBusiness(mock.Object);
             estimationBusiness.CalculateEstimate(estimate);
             return estimate;
         }

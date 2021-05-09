@@ -7,12 +7,10 @@ namespace EstimationApplication.BusinessRule
 {
     public class EstimateBusiness : IEstimateBusiness
     {
-        protected IConfiguration configuration;
         private readonly ILogger logger;
 
-        public EstimateBusiness(IConfiguration _configuration, ILogger<EstimateBusiness> _logger)
+        public EstimateBusiness(ILogger<EstimateBusiness> _logger)
         {
-            configuration = _configuration;
             logger = _logger;
         }
 
@@ -24,19 +22,11 @@ namespace EstimationApplication.BusinessRule
                 logger.LogInformation("Started Calculating Estimate");
                 if (estimate.Customer.UserCategories.Contains(Entities.UserCategory.Privileged.ToString()))
                 {
-                    if (Decimal.TryParse(configuration[EstimationApplicationConstant.DiscountPercentagePrivlieged], out decimal discount))
-                    {
-                        estimate.Discount = discount;
-                        calculatedEstimate = CalculateEstimateWithDiscount(calculatedEstimate, estimate.Discount);
-                    }
+                    calculatedEstimate = CalculateEstimateWithDiscount(calculatedEstimate, estimate.Customer.DiscountPercentApplicable);
                 }
                 else
                 {
-                    if (Decimal.TryParse(configuration[EstimationApplicationConstant.DiscountPercentageRegular], out decimal discount))
-                    {
-                        estimate.Discount = discount;
-                        calculatedEstimate = CalculateEstimateWithDiscount(calculatedEstimate, estimate.Discount);
-                    }
+                    calculatedEstimate = CalculateEstimateWithDiscount(calculatedEstimate, estimate.Customer.DiscountPercentApplicable);
                 }
                 estimate.TotalPrice = calculatedEstimate;
             }

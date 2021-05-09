@@ -31,6 +31,14 @@ namespace EstimationApplication.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy",
+                    builder => builder.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader());
+            });
+
             services.AddControllers(config =>
             {
                 config.Filters.Add(typeof(EstimationApplicationAPIExceptionFilter));
@@ -40,22 +48,6 @@ namespace EstimationApplication.API
             AddEstimationApplicationServices(services);
 
             services.AddMvc();
-            services.AddCors();
-
-            services.AddCors(options =>
-            {
-                options.AddPolicy("CorsPolicy",
-                    builder => builder.AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyHeader());
-            });
-
-            services.AddCors(options =>
-            {
-                options.AddPolicy("CorsPolicy",
-                    builder => builder
-                    .AllowCredentials());
-            });
 
             services.AddSwaggerGen(c =>
             {
@@ -80,13 +72,12 @@ namespace EstimationApplication.API
 
             loggerFactory.AddFile("Logs/EstimationApplicationLog-{Date}.txt");
 
+            app.UseRouting();
+
             app.UseCorsMiddleware();
             app.UseCors("CorsPolicy");
 
             app.UseHttpsRedirection();
-
-            app.UseRouting();
-
             app.UseAuthentication();
             app.UseAuthorization();
 

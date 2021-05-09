@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using EstimationApplication.Data;
 using EstimationApplication.Entities;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace EstimationApplication.BusinessRule
@@ -10,11 +11,13 @@ namespace EstimationApplication.BusinessRule
     public class UserBusiness : IUserBusiness
     {
         private readonly IUserData userData;
+        protected IConfiguration configuration;
         private readonly ILogger logger;
 
-        public UserBusiness(IUserData _userData, ILogger<UserBusiness> _logger)
+        public UserBusiness(IUserData _userData, IConfiguration _configuration, ILogger<UserBusiness> _logger)
         {
             userData = _userData;
+            configuration = _configuration;
             logger = _logger;
         }
 
@@ -48,7 +51,7 @@ namespace EstimationApplication.BusinessRule
 
         private CustomerModel GetCustomerFromUser(UserModel user)
         {
-            var customer = new CustomerModel() { UserName = user.UserName, UserCategories = new List<string>() };
+            var customer = new CustomerModel(configuration) { UserName = user.UserName, UserCategories = new List<string>() };
             try
             {
                 foreach (var item in user.UserCategories)
