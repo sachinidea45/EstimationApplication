@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<users>
+<user>
+      <username>TestPrivilegedUser</username>
+      <password>password123</password>
+      <categories>
+		<usercategory>Privileged</usercategory>
+	</categories>
+   </user>
+<user>
+      <username>TestRegularUser</username>
+      <password>password456</password>
+      <categories>
+		<usercategory>Regular</usercategory>
+	</categories>
+   </user>
+
+</users>
