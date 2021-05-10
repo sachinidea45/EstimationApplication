@@ -69,7 +69,7 @@ namespace EstimationApplication.API.Controllers
             return Unauthorized();
         }
 
-        public string GetUserName()
+        protected string GetUserName()
         {
             return GetUserNameFromJwtToken();
         }
