@@ -14,5 +14,11 @@ namespace EstimationApplication.API.Controllers
         [HttpGet]
         [Route("/error")]
         public IActionResult Error() => Problem();
+
+        [HttpGet]
+        public string MyStatusCode(int code)
+        {
+            return "You got error code " + code; ;
+        }
     }
 }

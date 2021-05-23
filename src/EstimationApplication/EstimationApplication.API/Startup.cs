@@ -44,19 +44,21 @@ namespace EstimationApplication.API
                 config.Filters.Add(typeof(EstimationApplicationAPIExceptionFilter));
             });
 
-            services.AddSwaggerGen(c =>
+            services.AddSwaggerGen(swagger =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "EstimationApplication.API", Version = "v1" });
-                //c.SwaggerDoc("v1", new OpenApiInfo { Title = "BasicAuth", Version = "v1" });
-                c.AddSecurityDefinition("basic", new OpenApiSecurityScheme
+                swagger.SwaggerDoc("v1", new OpenApiInfo { Title = "EstimationApplication.API", Version = "v1" });
+
+                // To Enable authorization using Swagger (JWT)  
+                swagger.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
                 {
                     Name = "Authorization",
-                    Type = SecuritySchemeType.Http,
-                    Scheme = "basic",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
                     In = ParameterLocation.Header,
-                    Description = "Basic Authorization header using the Bearer scheme."
+                    Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
                 });
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                swagger.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {
                           new OpenApiSecurityScheme
@@ -64,12 +66,37 @@ namespace EstimationApplication.API
                                 Reference = new OpenApiReference
                                 {
                                     Type = ReferenceType.SecurityScheme,
-                                    Id = "basic"
+                                    Id = "Bearer"
                                 }
                             },
                             new string[] {}
+
                     }
                 });
+
+                ////c.SwaggerDoc("v1", new OpenApiInfo { Title = "BasicAuth", Version = "v1" });
+                //c.AddSecurityDefinition("basic", new OpenApiSecurityScheme
+                //{
+                //    Name = "Authorization",
+                //    Type = SecuritySchemeType.Http,
+                //    Scheme = "basic",
+                //    In = ParameterLocation.Header,
+                //    Description = "Basic Authorization header using the Bearer scheme."
+                //});
+                //c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                //{
+                //    {
+                //          new OpenApiSecurityScheme
+                //            {
+                //                Reference = new OpenApiReference
+                //                {
+                //                    Type = ReferenceType.SecurityScheme,
+                //                    Id = "basic"
+                //                }
+                //            },
+                //            new string[] {}
+                //    }
+                //});
             });
 
             AddAuthenticationServices(services);
@@ -91,7 +118,8 @@ namespace EstimationApplication.API
             {
                 app.UseExceptionHandler("/api/Error/error");
             }
-            app.UseStatusCodePages("text/plain", "Status code page, status code: {0}");
+            //app.UseStatusCodePages("text/plain", "Status code page, status code: {0}");
+            app.UseStatusCodePagesWithRedirects("/api/Error/MyStatusCode?code={0}");
 
             loggerFactory.AddFile("Logs/EstimationApplicationLog-{Date}.txt");
 
@@ -164,6 +192,8 @@ namespace EstimationApplication.API
                 {
                     ValidateIssuer = true,
                     ValidateAudience = true,
+                    ValidateLifetime = false,
+                    ValidateIssuerSigningKey = true,
                     ValidAudience = Configuration["JWT:ValidAudience"],
                     ValidIssuer = Configuration["JWT:ValidIssuer"],
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Secret"]))
