@@ -58,7 +58,8 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "EstimationApplication:build"
+            "browserTarget": "EstimationApplication:build",
+            "ssl": true
           },
           "configurations": {
             "production": {
