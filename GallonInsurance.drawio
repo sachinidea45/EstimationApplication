@@ -256,6 +256,28 @@
         <mxCell id="vbUjU8Ga7-zYv_242MP6-71" value="REST" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=12;image=img/lib/azure2/devops/API_Connections.svg;" vertex="1" parent="1">
           <mxGeometry x="590" y="536.68" width="80" height="53.32" as="geometry" />
         </mxCell>
+        <mxCell id="vbUjU8Ga7-zYv_242MP6-79" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="vbUjU8Ga7-zYv_242MP6-74" target="vbUjU8Ga7-zYv_242MP6-48">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="390" y="540" />
+              <mxPoint x="390" y="570" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="vbUjU8Ga7-zYv_242MP6-74" value="Payment Gateway" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="520" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="vbUjU8Ga7-zYv_242MP6-80" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="vbUjU8Ga7-zYv_242MP6-75" target="vbUjU8Ga7-zYv_242MP6-48">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="390" y="597" />
+              <mxPoint x="390" y="570" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="vbUjU8Ga7-zYv_242MP6-75" value="SMS Gateway" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="576.9" width="80" height="40" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
